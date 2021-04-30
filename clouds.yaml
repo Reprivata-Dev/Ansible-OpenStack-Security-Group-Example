@@ -1,0 +1,17 @@
+##Here is the sample 'clouds.yaml' file containing the authentication parameters.
+##This goes on the OpenStack host machine in /etc/ansible/
+## Note: Ansible docs say it goes in the 'current directory' This is wrong and
+## it won't work if you put it there.
+clouds:
+  llanocloud:
+    auth:
+      auth_url: http://192.168.5.30:5000/v3
+      project_name: admin
+      username: admin
+      password: f7e791f4adb34f9e
+      project_domain_name: Default
+      user_domain_name: Default
+    name: llanocloud
+    identity_api_version: 3
+
+

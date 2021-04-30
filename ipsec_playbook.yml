@@ -1,0 +1,88 @@
+---
+- name: install a security group for IPsec
+  hosts: security_groups_install
+  tasks:
+    ## NOTE: Ansible expects the 'clouds.yaml' file containing the auth for the cloud 'llanocloud'
+    ## to be ON THE TARGET nost, not the local host. The documentation is WRONG about this!!!
+    ## Ansible docs explicitly say it should be in the local directory. Not true!
+    ## scp clouds.yaml cloud.repdev.cloud:/etc/openstack/clouds.yaml after any changes 
+    - name: Create a security group
+      os_security_group:
+        cloud: llanocloud
+        name: ipsec-group
+        state: present
+        description: Security group to support IPsec tunnel connections.
+
+    ## Remove the two defaiult egress rules that OpenStack installs on group creation
+    - os_security_group_rule:
+        security_group: ipsec-group
+        cloud: llanocloud
+        direction: egress
+        protocol:        ## Documentation is wrong. 'any' is not supported. Must be left blank for 'any'
+        port_range_min:
+        port_range_max:
+        ethertype: IPv4
+        interface: public
+        remote_ip_prefix:       ## Documentation is wrong. Must be left blank to match default rules.
+        state: absent
+    ## We do not want to allow any exfiltration via IPv4 or IPv6
+    - os_security_group_rule:
+        security_group: ipsec-group
+        cloud: llanocloud
+        direction: egress
+        protocol:       ## Documentation is wrong. 'any' is not supported. Must be left blank for 'any' 
+        port_range_min: 
+        port_range_max:
+        ethertype: IPv6
+        interface: public
+        remote_ip_prefix:       ## Documentation is wrong. Must be left blank to match default rules.
+        state: absent
+    ## Install ISAKMP ingress
+    - os_security_group_rule:
+        security_group: ipsec-group
+        cloud: llanocloud
+        protocol: udp
+        direction: ingress
+        ethertype: IPv4
+        interface: public
+        port_range_min: 500
+        port_range_max: 500
+        remote_ip_prefix: 0.0.0.0/0
+        state: present
+    ## Install IPSEC-NAT-T ingress
+    - os_security_group_rule:
+        security_group: ipsec-group
+        cloud: llanocloud
+        protocol: udp
+        direction: ingress
+        ethertype: IPv4
+        interface: public
+        port_range_min: 4500
+        port_range_max: 4500
+        remote_ip_prefix: 0.0.0.0/0
+        state: present
+    ## And repreat for egress.
+    - os_security_group_rule:
+        security_group: ipsec-group
+        cloud: llanocloud
+        protocol: udp
+        direction: egress
+        ethertype: IPv4
+        interface: public
+        port_range_min: 500
+        port_range_max: 500
+        remote_ip_prefix: 0.0.0.0/0
+        state: present
+
+    - os_security_group_rule:
+        security_group: ipsec-group
+        cloud: llanocloud
+        protocol: udp
+        direction: egress
+        ethertype: IPv4
+        interface: public
+        port_range_min: 4500
+        port_range_max: 4500
+        remote_ip_prefix: 0.0.0.0/0
+        state: present
+

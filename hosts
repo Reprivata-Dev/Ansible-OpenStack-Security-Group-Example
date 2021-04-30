@@ -1,0 +1,3 @@
+[server]
+security_groups_install ansible_host=cloud.repdev.cloud ansible_user=root ansible_password=229resolute6296
+
